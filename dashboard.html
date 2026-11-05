@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>10th GAMES — لوحة التحكم</title>
+  <meta name="description" content="لوحة تحكم نظام 10th GAMES لإدارة كافيه البلايستيشن">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Orbitron:wght@700;900&display=swap">
+  <link rel="stylesheet" href="./assets/css/global.css">
+  <link rel="stylesheet" href="./assets/css/layout.css">
+  <link rel="stylesheet" href="./assets/css/components.css">
+  <link rel="stylesheet" href="./assets/css/animations.css">
+  <style>
+    /* ── Dashboard-specific ── */
+    .dash-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--sp-4);
+      margin-bottom: var(--sp-6);
+    }
+
+    .dash-charts-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: var(--sp-4);
+      margin-bottom: var(--sp-5);
+    }
+
+    .dash-bottom-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--sp-4);
+    }
+
+    /* Device mini-grid in dashboard */
+    .dash-devices-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: var(--sp-2);
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    .dash-device-mini {
+      background: var(--bg-card2);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      padding: var(--sp-3);
+      text-align: center;
+      transition: var(--t-base);
+      cursor: pointer;
+    }
+
+    .dash-device-mini:hover { border-color: var(--red-border); }
+    .dash-device-mini.occupied { border-color: var(--red-border); background: var(--red-subtle); }
+    .dash-device-mini.reserved { border-color: var(--warning-border); background: var(--warning-bg); }
+    .dash-device-mini.maintenance { opacity: 0.5; }
+
+    .dash-device-mini-icon { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+    .dash-device-mini-name { font-size: 0.7rem; font-weight: 700; color: var(--text-primary); }
+    .dash-device-mini-status { font-size: 0.65rem; color: var(--text-muted); }
+
+    /* Recent sales list */
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+      padding: var(--sp-3) 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .activity-body { flex: 1; min-width: 0; }
+    .activity-title { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
+    .activity-sub   { font-size: 0.75rem; color: var(--text-muted); }
+    .activity-amount { font-size: 0.9rem; font-weight: 800; color: var(--red-primary); white-space: nowrap; font-family: var(--font-brand); }
+
+    @media (max-width: 1100px) {
+      .dash-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .dash-charts-row { grid-template-columns: 1fr; }
+      .dash-bottom-row { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+      .dash-kpi-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar injection target -->
+  <div id="sidebarContainer"></div>
+
+  <!-- Main wrapper -->
+  <div class="main-wrapper">
+
+    <!-- Topbar injection target -->
+    <div id="topbarContainer"></div>
+
+    <!-- Page Content -->
+    <main class="page-section page-fade">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <div class="page-title">
+          <span class="page-title-icon">📊</span>
+          <div>
+            <h1>لوحة التحكم</h1>
+            <p id="dashWelcomeText" style="margin:0;font-size:0.82rem;">مرحباً بك في 10th GAMES</p>
+          </div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-secondary btn-sm" onclick="window.location.href='./pages/pos/index.html'">
+            🛒 فتح الكاشير
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="window.location.href='./pages/playstation/index.html'">
+            🎮 إدارة الأجهزة
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="dash-kpi-grid" id="dashKpiGrid">
+        <!-- Filled by JS -->
+        <div class="kpi-card"><div class="skeleton skeleton-text" style="height:60px;width:100%;border-radius:8px;"></div></div>
+        <div class="kpi-card"><div class="skeleton skeleton-text" style="height:60px;width:100%;border-radius:8px;"></div></div>
+        <div class="kpi-card"><div class="skeleton skeleton-text" style="height:60px;width:100%;border-radius:8px;"></div></div>
+        <div class="kpi-card"><div class="skeleton skeleton-text" style="height:60px;width:100%;border-radius:8px;"></div></div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="dash-charts-row">
+        <!-- Revenue Chart -->
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <span class="chart-card-title">📈 إيرادات آخر 7 أيام</span>
+            <select id="chartPeriodSel" onchange="refreshChart()" style="max-width:130px;font-size:0.8rem;padding:5px 8px;">
+              <option value="7">7 أيام</option>
+              <option value="30">30 يوم</option>
+            </select>
+          </div>
+          <div class="chart-wrapper" style="height:220px;">
+            <canvas id="dashRevenueChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Donut chart -->
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <span class="chart-card-title">🎮 توزيع الأجهزة</span>
+          </div>
+          <div class="chart-wrapper" style="height:220px;display:flex;align-items:center;justify-content:center;">
+            <canvas id="dashDeviceChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Row -->
+      <div class="dash-bottom-row">
+
+        <!-- Active Devices -->
+        <div class="card">
+          <div class="card-header">
+            <h3>🎮 حالة الأجهزة</h3>
+            <a href="./pages/playstation/index.html" class="btn btn-ghost btn-xs">عرض الكل →</a>
+          </div>
+          <div class="card-body">
+            <div class="dash-devices-grid" id="dashDevicesGrid">
+              <div class="text-muted text-sm">جاري التحميل...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card">
+          <div class="card-header">
+            <h3>💳 آخر المبيعات</h3>
+            <a href="./pages/invoices/index.html" class="btn btn-ghost btn-xs">عرض الكل →</a>
+          </div>
+          <div class="card-body" id="dashRecentSales">
+            <div class="text-muted text-sm">لا توجد مبيعات اليوم</div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Toast -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script>window.BASE_PATH = './';</script>
+  <script>window.PAGE_KEY = 'dashboard';</script>
+  <script>window.PAGE_TITLE = 'لوحة التحكم';</script>
+  <script>window.PAGE_ICON  = '📊';</script>
+  <script src="./assets/js/utils.js"></script>
+  <script src="./assets/js/db.js"></script>
+  <script src="./assets/js/auth.js"></script>
+  <script src="./assets/js/api.js"></script>
+  <script src="./assets/js/app.js"></script>
+  <script src="./assets/js/dashboard.js"></script>
+</body>
+</html>

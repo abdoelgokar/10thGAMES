@@ -1,0 +1,378 @@
+/* POS Page CSS — pages/pos/pos.css */
+
+/* ─── LAYOUT ─── */
+.pos-layout {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: var(--sp-4);
+  height: calc(100vh - var(--topbar-h) - 48px);
+  overflow: hidden;
+}
+
+/* ─── PRODUCTS PANEL ─── */
+.pos-products-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  overflow: hidden;
+}
+
+.pos-search-bar {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+}
+
+/* ─── CATEGORIES ─── */
+.pos-cats {
+  display: flex;
+  gap: var(--sp-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-shrink: 0;
+}
+.pos-cats::-webkit-scrollbar { display: none; }
+
+.pos-cat-btn {
+  padding: 6px 14px;
+  border-radius: var(--r-full);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--t-fast);
+  font-family: var(--font-main);
+}
+
+.pos-cat-btn:hover, .pos-cat-btn.active {
+  background: var(--red-subtle);
+  border-color: var(--red-primary);
+  color: var(--red-primary);
+}
+
+/* ─── PRODUCTS GRID ─── */
+.pos-products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+  gap: var(--sp-2);
+  overflow-y: auto;
+  padding-bottom: var(--sp-2);
+}
+
+/* ─── PRODUCT CARD ─── */
+.pos-product-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--sp-3);
+  cursor: pointer;
+  transition: var(--t-base);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  text-align: center;
+  position: relative;
+  user-select: none;
+}
+
+.pos-product-card:hover {
+  border-color: var(--red-border);
+  background: var(--bg-card2);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.pos-product-card:active {
+  transform: scale(0.97);
+}
+
+.pos-product-card.out-of-stock {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pos-product-icon { font-size: 2rem; line-height: 1; }
+.pos-product-name { font-size: 0.8rem; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
+.pos-product-price { font-family: var(--font-brand); font-size: 0.9rem; font-weight: 900; color: var(--red-primary); }
+.pos-product-stock { font-size: 0.65rem; color: var(--text-muted); }
+.pos-product-stock.low { color: var(--warning); }
+.pos-product-stock.out { color: var(--danger); }
+
+.pos-add-indicator {
+  position: absolute;
+  top: 6px; left: 6px;
+  background: var(--success);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  border-radius: 50%;
+  width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  animation: springIn 0.3s ease;
+}
+
+/* ─── CART PANEL ─── */
+.pos-cart-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-color: var(--red-border);
+}
+
+.pos-cart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-card2);
+  flex-shrink: 0;
+}
+
+.pos-cart-header h3 { font-size: 0.92rem; }
+
+/* ─── SMART CART LINKING SELECTOR STYLES ─── */
+.smart-link-container {
+  padding: var(--sp-3);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-card3);
+  flex-shrink: 0;
+}
+
+.smart-link-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-input);
+  padding: 3px;
+  border-radius: var(--r-md);
+  margin-bottom: var(--sp-2);
+  border: 1px solid var(--border);
+}
+
+.smart-tab-btn {
+  flex: 1;
+  padding: 7px 6px;
+  border-radius: var(--r-sm);
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: var(--t-fast);
+  font-family: var(--font-main);
+  white-space: nowrap;
+}
+
+.smart-tab-btn:hover {
+  color: var(--text-primary);
+}
+
+.smart-tab-btn.active {
+  background: linear-gradient(135deg, var(--red-deep), var(--red-primary));
+  color: #fff;
+  box-shadow: 0 0 8px var(--red-glow);
+}
+
+.smart-link-body {
+  margin-top: 4px;
+}
+
+.smart-device-select {
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-color: var(--red-border);
+}
+
+/* Session Info Card */
+.session-info-card {
+  margin-top: var(--sp-2);
+  background: linear-gradient(135deg, rgba(224,32,32,0.12), rgba(12,12,18,0.9));
+  border: 1px solid var(--red-border);
+  border-radius: var(--r-md);
+  padding: var(--sp-3);
+  box-shadow: var(--shadow-sm);
+  animation: fadeInDown 0.3s ease;
+}
+
+.session-info-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--red-border);
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+.session-info-title {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--red-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.session-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+  font-size: 0.78rem;
+}
+
+.session-info-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.session-info-label {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.session-info-val {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.session-info-val.highlight {
+  color: var(--red-primary);
+  font-family: var(--font-brand);
+}
+
+.session-info-status {
+  grid-column: 1 / -1;
+  text-align: center;
+  margin-top: 4px;
+  padding: 4px;
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  border-radius: var(--r-sm);
+  color: var(--success);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+/* ─── CART ITEMS ─── */
+.pos-cart-items {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--sp-2) var(--sp-3);
+}
+
+.pos-cart-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--border);
+}
+.pos-cart-item:last-child { border-bottom: none; }
+
+.pos-cart-item-icon { font-size: 1.2rem; flex-shrink: 0; }
+.pos-cart-item-body { flex: 1; min-width: 0; }
+.pos-cart-item-name { font-size: 0.82rem; font-weight: 600; color: var(--text-primary); }
+.pos-cart-item-price { font-size: 0.75rem; color: var(--text-muted); }
+
+.pos-cart-qty {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pos-qty-btn {
+  width: 24px; height: 24px;
+  border-radius: var(--r-xs);
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: var(--t-fast);
+  font-family: var(--font-main);
+}
+
+.pos-qty-btn:hover { background: var(--red-subtle); border-color: var(--red-border); color: var(--red-primary); }
+.pos-qty-value { font-size: 0.85rem; font-weight: 700; min-width: 20px; text-align: center; }
+
+.pos-cart-item-total {
+  font-family: var(--font-brand);
+  font-size: 0.85rem;
+  font-weight: 900;
+  color: var(--red-primary);
+  min-width: 55px;
+  text-align: left;
+}
+
+/* ─── TOTALS ─── */
+.pos-totals {
+  border-top: 1px solid var(--border);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--bg-card2);
+  flex-shrink: 0;
+}
+
+.pos-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.pos-total-row.total-row {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  border-top: 1px solid var(--border);
+  padding-top: var(--sp-2);
+  margin-top: var(--sp-1);
+}
+
+/* ─── PAYMENT ─── */
+.pos-payment {
+  padding: var(--sp-3);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.pos-pay-methods {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-2);
+}
+
+.pos-pay-btn {
+  padding: 7px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg-card2);
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--t-fast);
+  font-family: var(--font-main);
+}
+
+.pos-pay-btn:hover, .pos-pay-btn.active {
+  border-color: var(--red-primary);
+  background: var(--red-subtle);
+  color: var(--red-primary);
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 1024px) {
+  .pos-layout { grid-template-columns: 1fr; height: auto; overflow: visible; }
+  .pos-cart-panel { height: auto; }
+  .pos-cart-items { max-height: 250px; }
+}

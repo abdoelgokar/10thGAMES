@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>10th GAMES — المحاسبة والمصروفات</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Orbitron:wght@700;900&display=swap">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <link rel="stylesheet" href="../../assets/css/layout.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/animations.css">
+</head>
+<body>
+  <div id="sidebarContainer"></div>
+  <div class="main-wrapper">
+    <div id="topbarContainer"></div>
+    <main class="page-section page-fade">
+      <div class="page-header">
+        <div class="page-title">
+          <span class="page-title-icon">💰</span>
+          <div>
+            <h1>المحاسبة والمصروفات والورديات</h1>
+            <p style="margin:0;font-size:0.82rem;color:var(--text-muted);">إدارة المالية وتتبع الصندوق والمصروفات</p>
+          </div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-secondary btn-sm" onclick="openShiftModal()">🔄 إدارة الوردية</button>
+          <button class="btn btn-primary btn-sm" onclick="openExpenseModal()">➕ تسجيل مصروف</button>
+        </div>
+      </div>
+
+      <!-- Financial Summary Cards -->
+      <div class="stats-mini-grid" id="accSummaryGrid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: var(--sp-6);">
+        <!-- Filled by JS -->
+      </div>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchAccTab('expenses', this)">💸 المصروفات</button>
+        <button class="tab-btn" onclick="switchAccTab('shifts', this)">⏱ الورديات</button>
+      </div>
+
+      <!-- Tab Expenses -->
+      <div id="tabExpenses" class="tab-content active">
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>التاريخ</th>
+                <th>الوصف</th>
+                <th>الفئة</th>
+                <th>المبلغ</th>
+                <th>الموظف</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="expensesTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab Shifts -->
+      <div id="tabShifts" class="tab-content">
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>الكاشير المسلم</th>
+                <th>المستلم</th>
+                <th>فترة الوردية (الفتح / الإغلاق)</th>
+                <th>عهدة البداية</th>
+                <th>تفصيل المبيعات (نقدي / فيزا / إنستا)</th>
+                <th>إجمالي المبيعات</th>
+                <th>المتوقع / الفعلي</th>
+                <th>العجز / الزيادة</th>
+                <th>الحالة</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="shiftsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Expense Modal -->
+  <div class="modal-overlay hidden" id="expenseModalOverlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">➕ تسجيل مصروف جديد</span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">وصف المصروف <span class="form-required">*</span></label>
+          <input type="text" id="expDesc" placeholder="مثال: فاتورة كهرباء، شراء أدوات نظافة">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">الفئة</label>
+            <select id="expCategory">
+              <option value="صيانة">صيانة</option>
+              <option value="فواتير">فواتير (كهرباء/نت)</option>
+              <option value="ضيافة">ضيافة ومستلزمات</option>
+              <option value="رواتب">رواتب ومكافآت</option>
+              <option value="أخرى">أخرى</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">المبلغ (ج.م) <span class="form-required">*</span></label>
+            <input type="number" id="expAmount" min="1" step="1" value="0">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="saveExpense()">💾 حفظ المصروف</button>
+        <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shift Modal -->
+  <div class="modal-overlay hidden" id="shiftModalOverlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal modal-lg" style="max-width:750px;">
+      <div class="modal-header">
+        <span class="modal-title" id="shiftModalTitle">🔄 إدارة الوردية والخزنة النقدية</span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="shiftModalBody">
+        <!-- JS renders open or close shift form -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Shift Details & Handover Receipt Modal -->
+  <div class="modal-overlay hidden" id="shiftDetailsModalOverlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal modal-md">
+      <div class="modal-header">
+        <span class="modal-title">📑 تقرير إغلاق وتسليم الوردية</span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="shiftDetailsContent"></div>
+      <div class="modal-footer">
+        <button class="btn btn-primary btn-sm" onclick="window.print()">🖨 طباعة تقرير الوردية</button>
+        <button class="btn btn-ghost btn-sm" onclick="closeModal()">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script>window.BASE_PATH='../../';</script>
+  <script>window.PAGE_KEY='accounting';</script>
+  <script>window.PAGE_TITLE='المحاسبة';</script>
+  <script>window.PAGE_ICON='💰';</script>
+  <script src="../../assets/js/utils.js"></script>
+  <script src="../../assets/js/db.js"></script>
+  <script src="../../assets/js/auth.js"></script>
+  <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/app.js"></script>
+  <script src="./accounting.js"></script>
+</body>
+</html>

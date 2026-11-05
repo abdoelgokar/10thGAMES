@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>10th GAMES — تسجيل الدخول</title>
+  <meta name="description" content="نظام إدارة 10th GAMES — تسجيل دخول المستخدمين">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Orbitron:wght@700;900&display=swap">
+  <link rel="stylesheet" href="./assets/css/global.css">
+  <link rel="stylesheet" href="./assets/css/animations.css">
+  <style>
+    /* ── Login Page Exclusive Styles ── */
+    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
+
+    /* Background */
+    .login-bg {
+      position: fixed; inset: 0; z-index: 0;
+      background: radial-gradient(ellipse at 20% 50%, rgba(224,32,32,0.08) 0%, transparent 60%),
+                  radial-gradient(ellipse at 80% 20%, rgba(224,32,32,0.05) 0%, transparent 50%),
+                  var(--bg-void);
+    }
+
+    .login-bg-grid {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(224,32,32,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(224,32,32,0.04) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+
+    /* Floating particles */
+    .particle {
+      position: fixed; border-radius: 50%; pointer-events: none; z-index: 0;
+      background: radial-gradient(circle, rgba(224,32,32,0.08) 0%, transparent 70%);
+      animation: floatUp 8s ease-in-out infinite;
+    }
+    .p1 { width: 400px; height: 400px; top: -100px; right: -100px; animation-delay: 0s; }
+    .p2 { width: 300px; height: 300px; bottom: -80px; left:  -80px; animation-delay: 3s; }
+    .p3 { width: 200px; height: 200px; top: 40%; left: 5%; animation-delay: 1.5s; }
+
+    /* Card */
+    .login-card {
+      position: relative; z-index: 10;
+      background: var(--bg-card);
+      border: 1px solid var(--red-border);
+      border-radius: var(--r-2xl);
+      padding: 44px 40px 36px;
+      width: 100%; max-width: 420px;
+      box-shadow: var(--shadow-red-lg), 0 0 80px rgba(224,32,32,0.08);
+      animation: springIn 0.6s ease both;
+    }
+
+    /* Logo area */
+    .login-logo {
+      text-align: center; margin-bottom: 30px;
+    }
+
+    .login-logo-banner {
+      max-width: 100%;
+      width: 380px;
+      height: auto;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      box-shadow: 0 4px 25px rgba(0,0,0,0.8), 0 0 25px rgba(212, 175, 55, 0.25);
+    }
+
+    .login-brand {
+      font-family: var(--font-brand); font-size: 2.2rem; font-weight: 900;
+      color: var(--gold-primary, #d4af37); letter-spacing: 4px;
+      text-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+      line-height: 1;
+    }
+
+    .login-tagline {
+      font-size: 0.78rem; color: var(--text-muted);
+      letter-spacing: 2px; margin-top: 6px;
+    }
+
+    /* Divider */
+    .login-divider {
+      height: 1px; background: var(--border);
+      position: relative; margin: 22px 0;
+    }
+
+    .login-divider::after {
+      content: '🕷️'; position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--bg-card); padding: 0 8px; font-size: 0.9rem;
+    }
+
+    /* Form */
+    .login-form { display: flex; flex-direction: column; gap: 18px; }
+
+    .login-input-label {
+      display: block; font-size: 0.78rem; font-weight: 700;
+      color: var(--text-muted); margin-bottom: 6px; letter-spacing: 0.5px;
+    }
+
+    .login-input-wrap { position: relative; }
+
+    .login-input {
+      width: 100%; padding: 12px 42px 12px 14px;
+      background: var(--bg-input); border: 1px solid var(--border);
+      color: var(--text-primary); border-radius: var(--r-md); font-size: 0.95rem;
+      transition: var(--t-base); font-family: var(--font-main);
+    }
+
+    .login-input:focus {
+      border-color: var(--red-primary);
+      box-shadow: 0 0 0 3px var(--red-glow), 0 0 20px rgba(224,32,32,0.1);
+      background: var(--bg-card2); outline: none;
+    }
+
+    .login-input-icon {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--text-muted); font-size: 1rem;
+    }
+
+    /* Buttons */
+    .btn-login {
+      width: 100%; padding: 13px;
+      background: linear-gradient(135deg, var(--red-deep) 0%, var(--red-primary) 60%, #ff3344 100%);
+      border: 1px solid var(--red-primary); color: #fff;
+      border-radius: var(--r-md); font-family: var(--font-brand);
+      font-size: 1rem; font-weight: 700; letter-spacing: 2px;
+      cursor: pointer; transition: var(--t-base);
+      box-shadow: 0 0 20px var(--red-glow), var(--shadow-md);
+      position: relative; overflow: hidden;
+    }
+
+    .btn-login::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+      transform: translateX(-100%); transition: transform 0.5s ease;
+    }
+
+    .btn-login:hover { transform: translateY(-2px); box-shadow: 0 0 30px var(--red-primary), var(--shadow-lg); }
+    .btn-login:hover::before { transform: translateX(100%); }
+    .btn-login:active { transform: translateY(0); }
+
+    /* Demo accounts hint */
+    .demo-hint {
+      margin-top: 20px; padding: 12px 16px;
+      background: var(--red-subtle); border: 1px solid var(--red-border);
+      border-radius: var(--r-md); font-size: 0.78rem;
+    }
+
+    .demo-hint-title { font-weight: 700; color: var(--red-primary); margin-bottom: 6px; }
+    .demo-hint-row { display: flex; justify-content: space-between; color: var(--text-secondary); margin-top: 3px; }
+    .demo-hint-key { color: var(--text-primary); font-weight: 600; }
+
+    /* Version badge */
+    .login-version {
+      text-align: center; margin-top: 18px;
+      font-size: 0.72rem; color: var(--text-muted);
+    }
+
+    /* Shake animation for wrong password */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%       { transform: translateX(-8px); }
+      40%       { transform: translateX(8px); }
+      60%       { transform: translateX(-6px); }
+      80%       { transform: translateX(6px); }
+    }
+    .shake { animation: shake 0.4s ease; }
+  </style>
+</head>
+<body>
+
+  <div class="login-bg"></div>
+  <div class="login-bg-grid"></div>
+  <div class="particle p1"></div>
+  <div class="particle p2"></div>
+  <div class="particle p3"></div>
+
+  <!-- Login Card -->
+  <div class="login-card" id="loginCard">
+    <!-- Logo -->
+    <div class="login-logo">
+      <img src="./assets/images/logo.png" alt="10th GAMES" class="login-logo-banner">
+      <div class="login-brand">10th GAMES</div>
+      <div class="login-tagline">PREMIUM GAMING STORE & CAFÉ POS</div>
+    </div>
+
+    <div class="login-divider"></div>
+
+    <!-- Form -->
+    <form class="login-form" onsubmit="handleLogin(event)">
+      <div>
+        <label class="login-input-label" for="loginUsername">اسم المستخدم</label>
+        <div class="login-input-wrap">
+          <input type="text" id="loginUsername" class="login-input"
+                 placeholder="أدخل اسم المستخدم" autocomplete="username"
+                 required autofocus>
+          <span class="login-input-icon">👤</span>
+        </div>
+      </div>
+
+      <div>
+        <label class="login-input-label" for="loginPassword">كلمة المرور</label>
+        <div class="login-input-wrap">
+          <input type="password" id="loginPassword" class="login-input"
+                 placeholder="أدخل كلمة المرور" autocomplete="current-password"
+                 required id="loginPassword">
+          <span class="login-input-icon">🔑</span>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-login" id="loginBtn">
+        🎮 &nbsp; دخول
+      </button>
+    </form>
+
+    <!-- Demo Hint -->
+    <div class="demo-hint">
+      <div class="demo-hint-title">🔐 بيانات تجريبية</div>
+      <div class="demo-hint-row">
+        <span>مدير النظام:</span>
+        <span class="demo-hint-key">admin / 1234</span>
+      </div>
+      <div class="demo-hint-row">
+        <span>كاشير:</span>
+        <span class="demo-hint-key">cashier / 0000</span>
+      </div>
+    </div>
+
+    <div class="login-version">10th GAMES v2.0 &nbsp;|&nbsp; Gaming Café POS</div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script>
+    window.BASE_PATH = './';
+  </script>
+  <script src="./assets/js/utils.js"></script>
+  <script src="./assets/js/db.js"></script>
+  <script src="./assets/js/auth.js"></script>
+  <script>
+    // Initialize DB on login page
+    document.addEventListener('DOMContentLoaded', () => {
+      dbSeedDefaults();
+
+      // Already logged in? Redirect.
+      if (authIsLoggedIn()) {
+        window.location.href = './dashboard.html';
+        return;
+      }
+    });
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('loginBtn');
+      btn.disabled = true;
+      btn.textContent = '⏳ جاري التحقق...';
+
+      // Small delay for UX feel
+      setTimeout(() => {
+        const username = document.getElementById('loginUsername').value.trim();
+        const password = document.getElementById('loginPassword').value;
+
+        const user = authLogin(username, password);
+        if (user) {
+          playSound('success');
+          btn.textContent = '✅ مرحباً ' + user.name;
+          btn.style.background = 'linear-gradient(135deg, #14532d, var(--success))';
+          showToastSimple('مرحباً ' + user.name + '! 👋', 'success');
+          setTimeout(() => { window.location.href = './dashboard.html'; }, 800);
+        } else {
+          playSound('error');
+          btn.disabled    = false;
+          btn.textContent = '🕷️   دخول';
+          document.getElementById('loginCard').classList.add('shake');
+          setTimeout(() => document.getElementById('loginCard').classList.remove('shake'), 400);
+          showToastSimple('اسم المستخدم أو كلمة المرور غير صحيحة', 'error');
+        }
+      }, 300);
+    }
+
+    // Simple toast for login page (app.js not loaded here)
+    function showToastSimple(msg, type) {
+      let c = document.getElementById('toastContainer');
+      const t = document.createElement('div');
+      const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+      t.style.cssText = `
+        background: var(--bg-card2); border: 1px solid var(--border);
+        border-radius: 10px; padding: 10px 16px; margin-bottom: 8px;
+        display: flex; align-items: center; gap: 10px;
+        animation: toastIn 0.3s ease; font-size: 0.88rem; color: var(--text-primary);
+      `;
+      if (type === 'error')   t.style.borderColor = 'var(--danger-border)';
+      if (type === 'success') t.style.borderColor = 'var(--success-border)';
+      t.innerHTML = `<span>${icons[type] || 'ℹ️'}</span><span>${msg}</span>`;
+      c.appendChild(t);
+      setTimeout(() => t.remove(), 3500);
+    }
+  </script>
+</body>
+</html>

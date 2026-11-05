@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>10th GAMES — الكاشير وربط السلة الذكي</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Orbitron:wght@700;900&display=swap">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <link rel="stylesheet" href="../../assets/css/layout.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/animations.css">
+  <link rel="stylesheet" href="./pos.css">
+</head>
+<body>
+  <div id="sidebarContainer"></div>
+  <div class="main-wrapper">
+    <div id="topbarContainer"></div>
+    <main class="page-section page-fade" style="padding-bottom:0;">
+      <div class="pos-layout">
+
+        <!-- LEFT: Products Panel -->
+        <div class="pos-products-panel">
+          <div class="pos-search-bar">
+            <div class="search-field" style="flex:1;">
+              <input type="text" id="posSearchInput" placeholder="🔍 بحث بالاسم أو الباركود..." oninput="posSearch()">
+              <span class="search-icon">⌕</span>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="openPosReturnsModal()" style="font-weight:700;display:flex;align-items:center;gap:6px;white-space:nowrap;" title="استعراض العمليات السابقة وعمل مرتجع">
+              <span>⏮️</span>
+              <span>العمليات السابقة والمرتجعات</span>
+            </button>
+            <button class="btn btn-primary btn-sm" onclick="openBarcodeScanner()">📷 مسح</button>
+          </div>
+
+          <!-- Categories tabs -->
+          <div class="pos-cats" id="posCatsBar">
+            <button class="pos-cat-btn active" onclick="filterPosCat('')" data-cat="">الكل</button>
+          </div>
+
+          <!-- Products grid -->
+          <div class="pos-products-grid" id="posProductsGrid">
+            <!-- Filled by JS -->
+          </div>
+        </div>
+
+        <!-- RIGHT: Cart Panel with Smart Cart Linking -->
+        <div class="pos-cart-panel">
+          <div class="pos-cart-header">
+            <h3>🛒 السلة وربط الطلب</h3>
+            <div class="flex gap-2 items-center">
+              <span class="badge badge-red" id="posCartCount">0</span>
+              <button class="btn btn-ghost btn-xs" onclick="clearCart()">🗑 مسح</button>
+            </div>
+          </div>
+
+          <!-- SMART CART LINKING SELECTOR -->
+          <div class="smart-link-container">
+            <div class="smart-link-tabs">
+              <button class="smart-tab-btn active" id="tabDeviceLink" onclick="switchCartLinkMode('device')">
+                🎮 اختيار جهاز شغال
+              </button>
+              <button class="smart-tab-btn" id="tabManualLink" onclick="switchCartLinkMode('manual')">
+                ✍️ كتابة اسم العميل
+              </button>
+            </div>
+
+            <!-- Mode 1: Device Dropdown -->
+            <div id="modeDeviceLink" class="smart-link-body">
+              <select id="posOccupiedDeviceSelect" class="smart-device-select" onchange="onSelectOccupiedDevice()">
+                <option value="">اختر جهاز مشغول حالياً...</option>
+              </select>
+            </div>
+
+            <!-- Mode 2: Manual Customer Input -->
+            <div id="modeManualLink" class="smart-link-body hidden" style="display:none;">
+              <input type="text" id="posCustomerName" placeholder="👤 اسم العميل (مستقل - اختياري)" list="posCustomersList" oninput="onManualCustomerNameChange()">
+              <datalist id="posCustomersList"></datalist>
+            </div>
+
+            <!-- Session Info Card (Rendered when device is linked) -->
+            <div id="sessionInfoCard" class="session-info-card hidden" style="display:none;">
+              <!-- Filled dynamically by pos.js -->
+            </div>
+          </div>
+
+          <!-- Cart items -->
+          <div class="pos-cart-items" id="posCartItems">
+            <div class="empty-state" style="padding:30px 16px;">
+              <span class="empty-state-icon" style="font-size:2rem;">🛒</span>
+              <div class="empty-state-title">السلة فارغة</div>
+              <div class="empty-state-desc">اختر منتجاً من القائمة</div>
+            </div>
+          </div>
+
+          <!-- Totals -->
+          <div class="pos-totals">
+            <div class="pos-total-row">
+              <span>المجموع الفرعي</span>
+              <span id="posSubtotal">0.00 ج.م</span>
+            </div>
+            <div class="pos-total-row">
+              <span>
+                خصم
+                <select id="posDiscountType" style="display:inline;width:auto;padding:2px 6px;font-size:0.78rem;margin-right:4px;" onchange="recalcTotals()">
+                  <option value="fixed">ج.م</option>
+                  <option value="pct">%</option>
+                </select>
+              </span>
+              <span>
+                <input type="number" id="posDiscount" min="0" value="0" style="width:70px;text-align:center;" oninput="recalcTotals()">
+              </span>
+            </div>
+            <div class="pos-total-row" id="posTaxRow">
+              <span>ضريبة القيمة المضافة <span id="posTaxPct">(14%)</span></span>
+              <span id="posTaxAmt">0.00 ج.م</span>
+            </div>
+            <div class="pos-total-row total-row">
+              <span>الإجمالي</span>
+              <span id="posTotal" class="font-brand" style="font-size:1.15rem;color:var(--red-primary);">0.00 ج.م</span>
+            </div>
+          </div>
+
+          <!-- Payment & Action -->
+          <div class="pos-payment">
+            <div class="pos-pay-methods">
+              <button class="pos-pay-btn active" data-method="cash" onclick="selectPayMethod('cash')">💵 نقدي</button>
+              <button class="pos-pay-btn" data-method="visa" onclick="selectPayMethod('visa')">💳 فيزا</button>
+              <button class="pos-pay-btn" data-method="instapay" onclick="selectPayMethod('instapay')">📱 إنستاباي</option>
+              <button class="pos-pay-btn" data-method="mixed" onclick="selectPayMethod('mixed')">🔀 مختلط</button>
+            </div>
+
+            <!-- Mixed payment inputs -->
+            <div id="mixedPayRow" class="hidden" style="display:none;">
+              <div class="form-row" style="gap:var(--sp-2);margin-top:var(--sp-2);">
+                <div><label class="form-label" style="font-size:0.72rem;">💵 نقدي</label>
+                  <input type="number" id="mixCash" min="0" value="0" placeholder="0" oninput="recalcMixed()"></div>
+                <div><label class="form-label" style="font-size:0.72rem;">💳 فيزا</label>
+                  <input type="number" id="mixVisa" min="0" value="0" placeholder="0" oninput="recalcMixed()"></div>
+                <div><label class="form-label" style="font-size:0.72rem;">📱 إنستاباي</label>
+                  <input type="number" id="mixInsta" min="0" value="0" placeholder="0" oninput="recalcMixed()"></div>
+              </div>
+              <div class="pos-total-row" style="border-top:none;padding-top:4px;">
+                <span style="font-size:0.8rem;">المتبقي</span>
+                <span id="mixRemaining" style="font-weight:700;color:var(--warning);">0.00 ج.م</span>
+              </div>
+            </div>
+
+            <!-- Cash return -->
+            <div id="cashReturnRow" style="display:none;background:var(--success-bg);border:1px solid var(--success-border);border-radius:var(--r-sm);padding:8px 12px;margin-top:var(--sp-2);">
+              <div class="form-row" style="gap:var(--sp-2);">
+                <div><label class="form-label" style="font-size:0.72rem;">💵 المبلغ المدفوع</label>
+                  <input type="number" id="cashPaid" min="0" placeholder="0" oninput="recalcChange()"></div>
+                <div><label class="form-label" style="font-size:0.72rem;">🪙 الباقي</label>
+                  <div style="padding:9px 13px;background:var(--bg-card2);border:1px solid var(--border);border-radius:var(--r-sm);font-weight:800;color:var(--success);font-family:var(--font-brand);" id="cashChange">0.00 ج.م</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Primary Action Buttons -->
+            <div class="flex flex-col gap-2 mt-2">
+              <button class="btn btn-primary btn-full btn-lg" id="posSubmitBtn" onclick="completeSale()">
+                ✅ &nbsp; إتمام وتأكيد البيع
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- POS Previous Operations & Returns Modal -->
+  <div class="modal-overlay hidden" id="posReturnsModalOverlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal modal-lg" style="max-width:920px;width:95%;">
+      <div class="modal-header">
+        <span class="modal-title">⏮️ العمليات السابقة واسترجاع الفواتير (المرتجعات)</span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" style="max-height:78vh;overflow-y:auto;">
+        <!-- Time & Status Filters -->
+        <div style="background:var(--bg-card2);padding:12px;border-radius:var(--r-md);border:1px solid var(--border);margin-bottom:var(--sp-3);">
+          <div style="display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <div class="flex gap-2 flex-wrap" id="posRetPeriodTabs">
+              <button class="btn btn-xs btn-primary pos-ret-btn" data-period="all" onclick="setPosRetPeriod('all', this)">🌐 كل الفترات</button>
+              <button class="btn btn-xs btn-ghost pos-ret-btn" data-period="today" onclick="setPosRetPeriod('today', this)">📅 اليوم</button>
+              <button class="btn btn-xs btn-ghost pos-ret-btn" data-period="yesterday" onclick="setPosRetPeriod('yesterday', this)">📅 أمس</button>
+              <button class="btn btn-xs btn-ghost pos-ret-btn" data-period="month" onclick="setPosRetPeriod('month', this)">📆 هذا الشهر</button>
+              <button class="btn btn-xs btn-ghost pos-ret-btn" data-period="year" onclick="setPosRetPeriod('year', this)">🗓️ هذه السنة</button>
+            </div>
+
+            <div class="flex gap-2 items-center">
+              <label style="font-size:0.75rem;">الحالة:</label>
+              <select id="posRetStatusFilter" class="filter-select" onchange="renderPosReturnsList()" style="font-size:0.75rem;padding:3px 8px;">
+                <option value="">كل العمليات</option>
+                <option value="completed">✅ عمليات مكتملة</option>
+                <option value="refunded">🔄 المرتجعات فقط</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Custom Day / Month / Year Specific Pickers -->
+          <div style="display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:center;padding-top:6px;border-top:1px dashed var(--border);">
+            <div class="flex items-center gap-1">
+              <span style="font-size:0.78rem;font-weight:700;">🎯 فلترة مخصصة:</span>
+              <select id="posRetCustomMode" class="filter-select" onchange="onPosRetCustomModeChange()" style="font-size:0.75rem;padding:3px 8px;">
+                <option value="none">سريع</option>
+                <option value="custom_day">📅 باليوم (تحديد يوم)</option>
+                <option value="custom_month">📆 بالشهر (تحديد شهر)</option>
+                <option value="custom_year">🗓️ بالسنة (تحديد سنة)</option>
+              </select>
+            </div>
+
+            <div id="posRetDayWrap" style="display:none;" class="flex items-center gap-1">
+              <label style="font-size:0.75rem;">اليوم:</label>
+              <input type="date" id="posRetCustomDayInput" onchange="renderPosReturnsList()" style="padding:2px 6px;font-size:0.75rem;border-radius:4px;border:1px solid var(--border);background:var(--bg-input);color:var(--text-primary);">
+            </div>
+
+            <div id="posRetMonthWrap" style="display:none;" class="flex items-center gap-1">
+              <label style="font-size:0.75rem;">الشهر:</label>
+              <input type="month" id="posRetCustomMonthInput" onchange="renderPosReturnsList()" style="padding:2px 6px;font-size:0.75rem;border-radius:4px;border:1px solid var(--border);background:var(--bg-input);color:var(--text-primary);">
+            </div>
+
+            <div id="posRetYearWrap" style="display:none;" class="flex items-center gap-1">
+              <label style="font-size:0.75rem;">السنة:</label>
+              <select id="posRetCustomYearInput" class="filter-select" onchange="renderPosReturnsList()" style="font-size:0.75rem;padding:3px 8px;">
+                <option value="2027">2027</option>
+                <option value="2026" selected>2026</option>
+                <option value="2025">2025</option>
+                <option value="2024">2024</option>
+              </select>
+            </div>
+
+            <div class="search-field" style="flex:1;min-width:180px;">
+              <input type="text" id="posRetSearchInput" placeholder="🔍 بحث برقم الفاتورة، العميل أو الصنف..." oninput="renderPosReturnsList()" style="font-size:0.78rem;padding:4px 8px;">
+            </div>
+          </div>
+        </div>
+
+        <!-- POS Returns Mini KPI Summary -->
+        <div class="stats-mini-grid" id="posRetStatsGrid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: var(--sp-3);"></div>
+
+        <!-- Table of Past Operations -->
+        <div class="table-wrapper">
+          <table class="data-table" style="font-size:0.82rem;">
+            <thead>
+              <tr>
+                <th>رقم الفاتورة</th>
+                <th>التاريخ والوقت</th>
+                <th>العميل</th>
+                <th>الأصناف المباعة</th>
+                <th>طريقة الدفع</th>
+                <th>الحالة</th>
+                <th>الإجمالي</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="posReturnsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost btn-sm" onclick="closeModal()">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POS Return Confirmation Modal -->
+  <div class="modal-overlay hidden" id="posReturnConfirmModalOverlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal modal-md">
+      <div class="modal-header" style="background:var(--danger-bg);border-bottom:1px solid var(--danger-border);">
+        <span class="modal-title" style="color:var(--danger);">🔄 استرجاع الفاتورة (عمل مرتجع)</span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="posReturnConfirmContent"></div>
+      <div class="modal-footer">
+        <button class="btn btn-danger" id="btnPosConfirmReturn" onclick="executePosReturn()">🔴 تأكيد المرتجع وإعادة البضاعة للمخزن</button>
+        <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POS Receipt Preview Modal -->
+  <div class="modal-overlay hidden" id="posReceiptModalOverlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal modal-md">
+      <div class="modal-header">
+        <span class="modal-title">🧾 طباعة الفاتورة</span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="posReceiptModalContent"></div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="window.print()">🖨 طباعة (Thermal)</button>
+        <button class="btn btn-ghost" onclick="closeModal()">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script>window.BASE_PATH='../../';</script>
+  <script>window.PAGE_KEY='pos';</script>
+  <script>window.PAGE_TITLE='الكاشير ورابط السلة';</script>
+  <script>window.PAGE_ICON='🛒';</script>
+  <script src="../../assets/js/utils.js"></script>
+  <script src="../../assets/js/db.js"></script>
+  <script src="../../assets/js/auth.js"></script>
+  <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/app.js"></script>
+  <script src="./pos.js"></script>
+</body>
+</html>

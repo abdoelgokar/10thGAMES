@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>10th GAMES — الإعدادات</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Orbitron:wght@700;900&display=swap">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <link rel="stylesheet" href="../../assets/css/layout.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/animations.css">
+</head>
+<body>
+  <div id="sidebarContainer"></div>
+  <div class="main-wrapper">
+    <div id="topbarContainer"></div>
+    <main class="page-section page-fade">
+      <div class="page-header">
+        <div class="page-title">
+          <span class="page-title-icon">⚙️</span>
+          <div>
+            <h1>إعدادات النظام</h1>
+            <p style="margin:0;font-size:0.82rem;color:var(--text-muted);">تعديل إعدادات الكافيه، الأسعار، النسخ الاحتياطي والضرائب</p>
+          </div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-primary btn-sm" onclick="saveSystemSettings()">💾 حفظ الإعدادات</button>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Store Settings -->
+        <div class="card card-pad">
+          <h3 style="margin-bottom:var(--sp-4);">🏪 بيانات الكافيه والمحل</h3>
+          <div class="form-group">
+            <label class="form-label">اسم الكافيه / المحل</label>
+            <input type="text" id="setStoreName">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">رقم الهاتف</label>
+              <input type="text" id="setStorePhone">
+            </div>
+            <div class="form-group">
+              <label class="form-label">العملة</label>
+              <input type="text" id="setCurrency" placeholder="ج.م">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">العنوان</label>
+            <input type="text" id="setStoreAddress">
+          </div>
+          <div class="form-group">
+            <label class="form-label">تذييل الفاتورة</label>
+            <input type="text" id="setReceiptFooter">
+          </div>
+        </div>
+
+        <!-- Prices & Tax -->
+        <div class="card card-pad">
+          <h3 style="margin-bottom:var(--sp-4);">🎮 الأسعار الافتراضية والضرائب</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">سعر ساعة PS5 (ج.م)</label>
+              <input type="number" id="setPs5Price">
+            </div>
+            <div class="form-group">
+              <label class="form-label">سعر ساعة PS4 (ج.م)</label>
+              <input type="number" id="setPs4Price">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">سعر ساعة VIP (ج.م)</label>
+              <input type="number" id="setVipPrice">
+            </div>
+            <div class="form-group">
+              <label class="form-label">سعر ساعة PC (ج.م)</label>
+              <input type="number" id="setPcPrice">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">نسبة ضريبة القيمة المضافة (%)</label>
+            <input type="number" id="setTaxRate" min="0" max="100">
+          </div>
+        </div>
+
+        <!-- System Preferences -->
+        <div class="card card-pad">
+          <h3 style="margin-bottom:var(--sp-4);">🎨 تفضيلات النظام والتنبيهات</h3>
+          <div class="form-group">
+            <label class="toggle-switch">
+              <input type="checkbox" id="setSoundFX">
+              <span class="toggle-track"></span>
+              <span class="toggle-label">تفعيل المؤثرات الصوتية 🔊</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="toggle-switch">
+              <input type="checkbox" id="setNotifications">
+              <span class="toggle-track"></span>
+              <span class="toggle-label">تفعيل الإشعارات والتنبيهات 🔔</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Backup & Restore -->
+        <div class="card card-pad">
+          <h3 style="margin-bottom:var(--sp-4);">💾 النسخ الاحتياطي واستعادة البيانات</h3>
+          <p style="margin-bottom:var(--sp-4);">تصدير قاعدة البيانات كملف JSON للنسخ الاحتياطي أو نقلها لجهاز آخر.</p>
+          <div class="flex gap-2">
+            <button class="btn btn-secondary btn-sm" onclick="exportBackupData()">📥 تصدير نسخة احتياطية</button>
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('importFileInput').click()">📤 استعادة نسخة</button>
+            <input type="file" id="importFileInput" style="display:none;" accept=".json" onchange="importBackupData(event)">
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script>window.BASE_PATH='../../';</script>
+  <script>window.PAGE_KEY='settings';</script>
+  <script>window.PAGE_TITLE='الإعدادات';</script>
+  <script>window.PAGE_ICON='⚙️';</script>
+  <script src="../../assets/js/utils.js"></script>
+  <script src="../../assets/js/db.js"></script>
+  <script src="../../assets/js/auth.js"></script>
+  <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/app.js"></script>
+  <script src="./settings.js"></script>
+</body>
+</html>

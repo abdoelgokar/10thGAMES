@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>10th GAMES — العملاء</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Orbitron:wght@700;900&display=swap">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <link rel="stylesheet" href="../../assets/css/layout.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/animations.css">
+</head>
+<body>
+  <div id="sidebarContainer"></div>
+  <div class="main-wrapper">
+    <div id="topbarContainer"></div>
+    <main class="page-section page-fade">
+      <div class="page-header">
+        <div class="page-title">
+          <span class="page-title-icon">👥</span>
+          <div>
+            <h1>إدارة العملاء</h1>
+            <p id="custSummaryText" style="margin:0;font-size:0.82rem;color:var(--text-muted);">جاري التحميل...</p>
+          </div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-primary btn-sm" onclick="openAddCustomerModal()">➕ عميل جديد</button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters-bar">
+        <div class="search-field">
+          <input type="text" id="custSearchInput" placeholder="🔍 بحث باسم العميل أو رقم الهاتف..." oninput="renderCustomers()">
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>الاسم</th>
+              <th>رقم الهاتف</th>
+              <th>عدد الزيارات</th>
+              <th>إجمالي الإنفاق</th>
+              <th>الجهاز المفضل</th>
+              <th>تاريخ الانضمام</th>
+              <th>ملاحظات</th>
+              <th>إجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="customersTableBody">
+            <!-- Filled by JS -->
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- Customer Modal -->
+  <div class="modal-overlay hidden" id="customerModalOverlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="custModalTitle">➕ إضافة عميل</span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="custEditId">
+        <div class="form-group">
+          <label class="form-label">الاسم <span class="form-required">*</span></label>
+          <input type="text" id="custName" placeholder="اسم العميل">
+        </div>
+        <div class="form-group">
+          <label class="form-label">رقم الهاتف</label>
+          <input type="tel" id="custPhone" placeholder="01xxxxxxxxx">
+        </div>
+        <div class="form-group">
+          <label class="form-label">الجهاز المفضل</label>
+          <select id="custFavDevice">
+            <option value="">غير محدد</option>
+            <option value="PS5">PS5</option>
+            <option value="PS4">PS4</option>
+            <option value="VIP">VIP</option>
+            <option value="PC">PC</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ملاحظات</label>
+          <textarea id="custNotes" placeholder="أي ملاحظات تخص العميل..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="saveCustomer()">💾 حفظ</button>
+        <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script>window.BASE_PATH='../../';</script>
+  <script>window.PAGE_KEY='customers';</script>
+  <script>window.PAGE_TITLE='العملاء';</script>
+  <script>window.PAGE_ICON='👥';</script>
+  <script src="../../assets/js/utils.js"></script>
+  <script src="../../assets/js/db.js"></script>
+  <script src="../../assets/js/auth.js"></script>
+  <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/app.js"></script>
+  <script src="./customers.js"></script>
+</body>
+</html>

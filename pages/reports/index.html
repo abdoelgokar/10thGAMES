@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>10th GAMES — التقارير والتحليلات</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Orbitron:wght@700;900&display=swap">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <link rel="stylesheet" href="../../assets/css/layout.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/animations.css">
+  <style>
+    .reports-charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--sp-4);
+      margin-bottom: var(--sp-6);
+    }
+    @media (max-width: 900px) {
+      .reports-charts-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div id="sidebarContainer"></div>
+  <div class="main-wrapper">
+    <div id="topbarContainer"></div>
+    <main class="page-section page-fade">
+      <div class="page-header">
+        <div class="page-title">
+          <span class="page-title-icon">📈</span>
+          <div>
+            <h1>التقارير والتحليلات البيانية</h1>
+            <p style="margin:0;font-size:0.82rem;color:var(--text-muted);">تحليلات شاملة للمبيعات، المنتجات والأجهزة</p>
+          </div>
+        </div>
+        <div class="page-actions">
+          <select id="reportPeriodSel" class="filter-select" onchange="loadReports()" style="max-width:140px;">
+            <option value="day">اليوم</option>
+            <option value="week">هذا الأسبوع</option>
+            <option value="month" selected>هذا الشهر</option>
+            <option value="year">هذه السنة</option>
+          </select>
+          <button class="btn btn-secondary btn-sm" onclick="exportExcelReport()">📊 تصدير Excel</button>
+          <button class="btn btn-primary btn-sm" onclick="exportPdfReport()">📄 تصدير PDF</button>
+        </div>
+      </div>
+
+      <!-- Financial Metrics -->
+      <div class="stats-mini-grid" id="reportsSummaryGrid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: var(--sp-6);"></div>
+
+      <!-- Charts Grid -->
+      <div class="reports-charts-grid">
+        <div class="chart-card">
+          <div class="chart-card-header"><span class="chart-card-title">💰 الإيرادات والمصروفات والربح</span></div>
+          <div class="chart-wrapper" style="height:250px;"><canvas id="chartFinancial"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-header"><span class="chart-card-title">💳 طرق الدفع</span></div>
+          <div class="chart-wrapper" style="height:250px;display:flex;align-items:center;justify-content:center;"><canvas id="chartPayments"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-header"><span class="chart-card-title">🍿 أكثر المنتجات مبيعاً</span></div>
+          <div class="chart-wrapper" style="height:250px;"><canvas id="chartTopProducts"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-header"><span class="chart-card-title">🎮 أكثر الأجهزة استخداماً</span></div>
+          <div class="chart-wrapper" style="height:250px;display:flex;align-items:center;justify-content:center;"><canvas id="chartDevices"></canvas></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+  <script>window.BASE_PATH='../../';</script>
+  <script>window.PAGE_KEY='reports';</script>
+  <script>window.PAGE_TITLE='التقارير';</script>
+  <script>window.PAGE_ICON='📈';</script>
+  <script src="../../assets/js/utils.js"></script>
+  <script src="../../assets/js/db.js"></script>
+  <script src="../../assets/js/auth.js"></script>
+  <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/app.js"></script>
+  <script src="./reports.js"></script>
+</body>
+</html>

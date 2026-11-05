@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>10th GAMES — الفواتير</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Orbitron:wght@700;900&display=swap">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <link rel="stylesheet" href="../../assets/css/layout.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/animations.css">
+</head>
+<body>
+  <div id="sidebarContainer"></div>
+  <div class="main-wrapper">
+    <div id="topbarContainer"></div>
+    <main class="page-section page-fade">
+      <div class="page-header">
+        <div class="page-title">
+          <span class="page-title-icon">🧾</span>
+          <div>
+            <h1>أرشيف الفواتير والمبيعات</h1>
+            <p id="invoicesSummaryText" style="margin:0;font-size:0.82rem;color:var(--text-muted);">عرض، بحث وطباعة فواتير المبيعات مع الـ QR Code</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Date & Returns Filters Bar (Days, Months, Years) -->
+      <div class="card card-pad" style="margin-bottom:var(--sp-4);">
+        <div style="display:flex;flex-wrap:wrap;gap:var(--sp-3);align-items:center;justify-content:space-between;margin-bottom:var(--sp-3);">
+          <!-- Quick Period Tabs -->
+          <div class="flex gap-2 flex-wrap" id="invcPeriodPills">
+            <button class="btn btn-sm btn-primary invc-period-btn" data-period="all" onclick="setInvcPeriod('all', this)">🌐 كل الفترات</button>
+            <button class="btn btn-sm btn-ghost invc-period-btn" data-period="today" onclick="setInvcPeriod('today', this)">📅 اليوم</button>
+            <button class="btn btn-sm btn-ghost invc-period-btn" data-period="yesterday" onclick="setInvcPeriod('yesterday', this)">📅 أمس</button>
+            <button class="btn btn-sm btn-ghost invc-period-btn" data-period="month" onclick="setInvcPeriod('month', this)">📆 هذا الشهر</button>
+            <button class="btn btn-sm btn-ghost invc-period-btn" data-period="year" onclick="setInvcPeriod('year', this)">🗓️ هذه السنة</button>
+          </div>
+
+          <!-- Status Filter -->
+          <div class="flex gap-2 items-center">
+            <label class="form-label" style="margin:0;font-size:0.8rem;">الحالة:</label>
+            <select id="invcStatusFilter" class="filter-select" onchange="renderInvoices()" style="max-width:160px;">
+              <option value="">كل العمليات</option>
+              <option value="completed">✅ عمليات مكتملة فقط</option>
+              <option value="refunded">🔄 المرتجعات فقط</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Custom Date Selectors (Day, Month, Year) -->
+        <div style="display:flex;flex-wrap:wrap;gap:var(--sp-3);align-items:center;background:var(--bg-card2);padding:10px 14px;border-radius:var(--r-md);border:1px solid var(--border);">
+          <div class="flex items-center gap-2">
+            <span style="font-size:0.82rem;font-weight:700;">🎯 تحديد الفترة:</span>
+            <select id="invcCustomMode" class="filter-select" onchange="onInvcCustomModeChange()" style="max-width:165px;">
+              <option value="none">فترة سريعة</option>
+              <option value="custom_day">📅 باليوم (تحديد يوم محدد)</option>
+              <option value="custom_month">📆 بالشهر (تحديد شهر محدد)</option>
+              <option value="custom_year">🗓️ بالسنة (تحديد سنة محددة)</option>
+            </select>
+          </div>
+
+          <!-- Custom Day Picker -->
+          <div id="invcDayWrap" style="display:none;" class="flex items-center gap-2">
+            <label style="font-size:0.78rem;">اليوم:</label>
+            <input type="date" id="invcCustomDayInput" onchange="renderInvoices()" style="padding:4px 8px;font-size:0.8rem;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--bg-input);color:var(--text-primary);">
+          </div>
+
+          <!-- Custom Month Picker -->
+          <div id="invcMonthWrap" style="display:none;" class="flex items-center gap-2">
+            <label style="font-size:0.78rem;">الشهر:</label>
+            <input type="month" id="invcCustomMonthInput" onchange="renderInvoices()" style="padding:4px 8px;font-size:0.8rem;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--bg-input);color:var(--text-primary);">
+          </div>
+
+          <!-- Custom Year Picker -->
+          <div id="invcYearWrap" style="display:none;" class="flex items-center gap-2">
+            <label style="font-size:0.78rem;">السنة:</label>
+            <select id="invcCustomYearInput" class="filter-select" onchange="renderInvoices()" style="max-width:110px;">
+              <option value="2027">2027</option>
+              <option value="2026" selected>2026</option>
+              <option value="2025">2025</option>
+              <option value="2024">2024</option>
+            </select>
+          </div>
+
+          <!-- Search field -->
+          <div class="search-field" style="flex:1;min-width:190px;">
+            <input type="text" id="invcSearchInput" placeholder="🔍 بحث برقم الفاتورة أو اسم العميل..." oninput="renderInvoices()">
+          </div>
+
+          <!-- Type filter -->
+          <select id="invcTypeFilter" class="filter-select" onchange="renderInvoices()" style="max-width:150px;">
+            <option value="">كل الأنواع</option>
+            <option value="session">🎮 جلسات بلايستيشن</option>
+            <option value="pos">🛒 كاشير</option>
+          </select>
+        </div>
+
+        <!-- Filter Summary Counters -->
+        <div class="stats-mini-grid" id="invcStatsGrid" style="grid-template-columns: repeat(4, 1fr); margin-top: var(--sp-3);"></div>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>رقم الفاتورة</th>
+              <th>النوع</th>
+              <th>العميل</th>
+              <th>التاريخ والوقت</th>
+              <th>طريقة الدفع</th>
+              <th>الحالة</th>
+              <th>الإجمالي</th>
+              <th>إجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="invoicesTableBody"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- Invoice View / Print Modal -->
+  <div class="modal-overlay hidden" id="invoiceModalOverlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal modal-md">
+      <div class="modal-header">
+        <span class="modal-title">🧾 عرض الفاتورة والـ QR</span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="invoiceModalContent"></div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="window.print()">🖨 طباعة الفاتورة (Thermal)</button>
+        <button class="btn btn-ghost" onclick="closeModal()">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Return Confirmation Modal -->
+  <div class="modal-overlay hidden" id="returnModalOverlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal modal-md">
+      <div class="modal-header" style="background:var(--danger-bg);border-bottom:1px solid var(--danger-border);">
+        <span class="modal-title" style="color:var(--danger);">🔄 استرجاع الفاتورة (عمل مرتجع)</span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="returnModalContent"></div>
+      <div class="modal-footer">
+        <button class="btn btn-danger" id="confirmReturnBtn" onclick="executeReturn()">🔴 تأكيد استرجاع الفاتورة بالكامل</button>
+        <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <script>window.BASE_PATH='../../';</script>
+  <script>window.PAGE_KEY='invoices';</script>
+  <script>window.PAGE_TITLE='الفواتير';</script>
+  <script>window.PAGE_ICON='🧾';</script>
+  <script src="../../assets/js/utils.js"></script>
+  <script src="../../assets/js/db.js"></script>
+  <script src="../../assets/js/auth.js"></script>
+  <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/app.js"></script>
+  <script src="./invoices.js"></script>
+</body>
+</html>

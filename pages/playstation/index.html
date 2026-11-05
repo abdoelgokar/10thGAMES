@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>10th GAMES — إدارة البلايستيشن وخريطة المحل</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Orbitron:wght@700;900&display=swap">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <link rel="stylesheet" href="../../assets/css/layout.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/animations.css">
+  <link rel="stylesheet" href="./playstation.css">
+</head>
+<body>
+  <div id="sidebarContainer"></div>
+  <div class="main-wrapper">
+    <div id="topbarContainer"></div>
+    <main class="page-section page-fade">
+
+      <!-- Header -->
+      <div class="page-header">
+        <div class="page-title">
+          <span class="page-title-icon">🎮</span>
+          <div>
+            <h1>إدارة البلايستيشن وخريطة المحل التفاعلية</h1>
+            <p id="psStatusSummary" style="margin:0;font-size:0.82rem;color:var(--text-muted);">جاري التحميل...</p>
+          </div>
+        </div>
+        <div class="page-actions">
+          <div class="tab-bar" style="margin:0;">
+            <button class="tab-btn active" id="viewCardsBtn" onclick="switchPsView('cards')">📋 شبكة الأجهزة</button>
+            <button class="tab-btn" id="viewFloorBtn" onclick="switchPsView('floor')">🗺️ خريطة المحل</button>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="openWaitingListModal()">📋 الانتظار (<span id="waitingCountBadge">0</span>)</button>
+          <button class="btn btn-primary btn-sm" onclick="openStartSessionModal(null)">▶ بدء جلسة</button>
+        </div>
+      </div>
+
+      <!-- Waiting List Banner (shown if customers are waiting and a device becomes free) -->
+      <div id="waitingAlertBanner" class="alert alert-warning hidden" style="display:none;margin-bottom:var(--sp-4);">
+        <span class="alert-icon">⏳</span>
+        <div style="flex:1;">
+          <strong>يوجد عملاء في قائمة الانتظار!</strong>
+          العميل التالي: <strong id="nextWaitingCustomerName">—</strong>
+        </div>
+        <button class="btn btn-success btn-sm" onclick="serveNextWaitingCustomer()">🚀 تشغيل العميل التالي</button>
+      </div>
+
+      <!-- Stats mini bar -->
+      <div class="stats-mini-grid" id="psStatsGrid" style="grid-template-columns: repeat(5, 1fr); margin-bottom: var(--sp-4);"></div>
+
+      <!-- View Container 1: Cards View -->
+      <div id="viewCardsContainer" class="ps-devices-grid">
+        <!-- Filled by JS -->
+      </div>
+
+      <!-- View Container 2: Interactive Gaming Floor Map -->
+      <div id="viewFloorContainer" class="floor-map-grid hidden" style="display:none;">
+        <!-- Filled by JS -->
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ══ MODAL: Waiting List ══ -->
+  <div class="modal-overlay hidden" id="waitingModalOverlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal modal-md">
+      <div class="modal-header">
+        <span class="modal-title">⏳ قائمة انتظار العملاء</span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row mb-3">
+          <div class="form-group">
+            <label class="form-label">اسم العميل</label>
+            <input type="text" id="waitCustName" placeholder="اسم العميل">
+          </div>
+          <div class="form-group">
+            <label class="form-label">رقم الهاتف</label>
+            <input type="tel" id="waitCustPhone" placeholder="01xxxxxxxxx">
+          </div>
+          <div style="display:flex;align-items:flex-end;">
+            <button class="btn btn-primary btn-sm" onclick="addCustomerToWaitingList()">➕ إضافة للقائمة</button>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th># الأولوية</th>
+                <th>اسم العميل</th>
+                <th>رقم الهاتف</th>
+                <th>وقت الوصول</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="waitingListTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL: Device Detailed History ══ -->
+  <div class="modal-overlay hidden" id="deviceHistoryModalOverlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <span class="modal-title" id="devHistModalTitle">📜 سجل وتفاصيل الجهاز</span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="devHistModalBody"></div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL: Start Session ══ -->
+  <div class="modal-overlay hidden" id="startSessionModalOverlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <span class="modal-title">▶ بدء جلسة جديدة</span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">الجهاز <span class="form-required">*</span></label>
+            <select id="ssDevice" onchange="updateSessionPriceDisplay()">
+              <option value="">اختر جهاز...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">نوع الجلسة</label>
+            <select id="ssType" onchange="updateSessionPriceDisplay()">
+              <option value="open">مفتوحة (بالساعة)</option>
+              <option value="timed">محددة الوقت</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">اسم العميل</label>
+            <input type="text" id="ssCustomerName" placeholder="اسم العميل (اختياري)" list="ssCustomersList">
+            <datalist id="ssCustomersList"></datalist>
+          </div>
+          <div class="form-group">
+            <label class="form-label">رقم الهاتف</label>
+            <input type="tel" id="ssCustomerPhone" placeholder="01xxxxxxxxx">
+          </div>
+        </div>
+        <div class="form-row" id="ssTimedRow" style="display:none;">
+          <div class="form-group">
+            <label class="form-label">المدة (بالدقائق)</label>
+            <input type="number" id="ssDuration" min="15" step="15" value="60" placeholder="60" oninput="updateSessionPriceDisplay()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">السعر المحسوب</label>
+            <div style="padding:10px 13px;background:var(--bg-card2);border:1px solid var(--border);border-radius:var(--r-sm);font-weight:700;color:var(--red-primary);font-family:var(--font-brand);" id="ssCalcPrice">0.00 ج.م</div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">سعر الساعة (ج.م)</label>
+            <input type="number" id="ssHourlyPrice" min="1" step="0.5" value="50" onchange="updateSessionPriceDisplay()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">ملاحظات</label>
+            <input type="text" id="ssNotes" placeholder="أي ملاحظات...">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="startSession()">▶ بدء الجلسة</button>
+        <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL: Extend Time ══ -->
+  <div class="modal-overlay hidden" id="extendModalOverlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <span class="modal-title">⏳ تمديد وقت الجلسة</span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="extSessionId">
+        <div class="form-group">
+          <label class="form-label">إضافة وقت (بالدقائق)</label>
+          <select id="extMinutes">
+            <option value="15">15 دقيقة</option>
+            <option value="30" selected>30 دقيقة</option>
+            <option value="45">45 دقيقة</option>
+            <option value="60">60 دقيقة (ساعة)</option>
+            <option value="120">120 دقيقة (ساعتان)</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="confirmExtendSession()">⏳ تمديد الوقت</button>
+        <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL: Transfer Device ══ -->
+  <div class="modal-overlay hidden" id="transferModalOverlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <span class="modal-title">🔄 نقل الجلسة لجهاز آخر</span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="trSessionId">
+        <input type="hidden" id="trFromDeviceId">
+        <div class="form-group">
+          <label class="form-label">الجهاز الجديد (المتاح)</label>
+          <select id="trToDeviceId">
+            <option value="">اختر جهاز متوفر...</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="confirmTransferDevice()">🔄 تأكيد النقل</button>
+        <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL: End Session ══ -->
+  <div class="modal-overlay hidden" id="endSessionModalOverlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">⏹ إنهاء الجلسة</span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="endSessionDetails"></div>
+        <div class="divider"></div>
+        <div class="form-group">
+          <label class="form-label">طريقة الدفع</label>
+          <select id="endPayMethod">
+            <option value="cash">💵 نقدي</option>
+            <option value="visa">💳 فيزا</option>
+            <option value="instapay">📱 إنستاباي</option>
+            <option value="wallet">👛 محفظة إلكترونية</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">خصم (ج.م)</label>
+          <input type="number" id="endDiscount" min="0" value="0" placeholder="0">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger" onclick="confirmEndSession()">💳 إنهاء وتحصيل</button>
+        <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL: Add/Edit Device ══ -->
+  <div class="modal-overlay hidden" id="deviceModalOverlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="deviceModalTitle">➕ إضافة جهاز</span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="deviceEditId">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">نوع الجهاز <span class="form-required">*</span></label>
+            <select id="deviceType">
+              <option value="PS5">🎮 PS5</option>
+              <option value="PS4">🕹️ PS4</option>
+              <option value="VIP">👑 VIP</option>
+              <option value="PC">💻 PC</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">رقم/اسم الجهاز <span class="form-required">*</span></label>
+            <input type="text" id="deviceNumber" placeholder="مثال: PS5-01">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">سعر الساعة (ج.م)</label>
+            <input type="number" id="deviceHourlyPrice" min="1" step="0.5" value="50">
+          </div>
+          <div class="form-group">
+            <label class="form-label">الحالة</label>
+            <select id="deviceStatus">
+              <option value="available">✅ متاح</option>
+              <option value="maintenance">🔧 صيانة</option>
+              <option value="reserved">⏳ محجوز</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="saveDevice()">💾 حفظ</button>
+        <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script>window.BASE_PATH = '../../';</script>
+  <script>window.PAGE_KEY = 'playstation';</script>
+  <script>window.PAGE_TITLE = 'إدارة البلايستيشن وخريطة المحل';</script>
+  <script>window.PAGE_ICON  = '🎮';</script>
+  <script src="../../assets/js/utils.js"></script>
+  <script src="../../assets/js/db.js"></script>
+  <script src="../../assets/js/auth.js"></script>
+  <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/app.js"></script>
+  <script src="./playstation.js"></script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>10th GAMES — قائمة المأكولات والمشروبات</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Orbitron:wght@700;900&display=swap">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <link rel="stylesheet" href="../../assets/css/animations.css">
+  <style>
+    body { background: var(--bg-void); color: var(--text-primary); font-family: var(--font-main); padding-bottom: 80px; }
+    .client-header { background: var(--bg-card); border-bottom: 1px solid var(--red-border); padding: 16px; text-align: center; }
+    .client-logo { font-family: var(--font-brand); font-size: 1.6rem; color: var(--red-primary); font-weight: 900; }
+    .client-device-badge { background: var(--red-subtle); border: 1px solid var(--red-border); color: var(--red-primary); padding: 4px 12px; border-radius: var(--r-full); font-size: 0.82rem; font-weight: 700; display: inline-block; margin-top: 6px; }
+
+    .client-cats { display: flex; gap: 8px; overflow-x: auto; padding: 12px 16px; scrollbar-width: none; }
+    .client-cat-btn { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text-secondary); font-size: 0.8rem; white-space: nowrap; cursor: pointer; }
+    .client-cat-btn.active { background: var(--red-primary); color: #fff; border-color: var(--red-primary); }
+
+    .client-products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 0 16px; }
+    .client-prod-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 14px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
+    .client-prod-icon { font-size: 2.2rem; margin-bottom: 6px; }
+    .client-prod-name { font-size: 0.85rem; font-weight: 700; }
+    .client-prod-price { font-family: var(--font-brand); color: var(--red-primary); font-weight: 900; font-size: 0.95rem; margin: 4px 0; }
+
+    .client-bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card); border-top: 1px solid var(--red-border); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 -4px 20px rgba(0,0,0,0.5); z-index: 100; }
+  </style>
+</head>
+<body>
+
+  <header class="client-header">
+    <div class="client-logo">
+      <img src="../../assets/images/logo.png" alt="10th GAMES" style="max-height:45px;vertical-align:middle;margin-left:8px;border-radius:4px;">
+      10th GAMES
+    </div>
+    <div class="client-device-badge" id="clientDeviceLabel">جهاز: PS5-01</div>
+  </header>
+
+  <div class="client-cats" id="clientCatsBar"></div>
+  <div class="client-products-grid" id="clientProductsGrid"></div>
+
+  <div class="client-bottom-bar">
+    <div>
+      <div style="font-size:0.75rem;color:var(--text-muted);">إجمالي الطلب:</div>
+      <div style="font-family:var(--font-brand);font-size:1.1rem;font-weight:900;color:var(--red-primary);" id="clientCartTotal">0.00 ج.م</div>
+    </div>
+    <button class="btn btn-primary" onclick="submitClientOrder()" id="clientSubmitBtn" style="padding:10px 20px;">
+      🛒 إرسال الطلب للكاشير (<span id="clientCartCount">0</span>)
+    </button>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="../../assets/js/utils.js"></script>
+  <script src="../../assets/js/db.js"></script>
+  <script>
+    let clientCart = [];
+    let deviceId = new URLSearchParams(window.location.search).get('device') || 'dev_ps5_1';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      dbSeedDefaults();
+      const dev = dbFindById('devices', deviceId);
+      if (dev) document.getElementById('clientDeviceLabel').textContent = `جهاز: ${dev.number} (${dev.type})`;
+
+      renderClientProducts('');
+      renderClientCats();
+    });
+
+    function renderClientCats() {
+      const products = dbGet('products');
+      const cats = [...new Set(products.map(p => p.category).filter(Boolean))];
+      const bar = document.getElementById('clientCatsBar');
+      bar.innerHTML = `<button class="client-cat-btn active" onclick="filterClientCat('', this)">الكل</button>` +
+        cats.map(c => `<button class="client-cat-btn" onclick="filterClientCat('${c}', this)">${CATEGORY_EMOJI[c]||'📦'} ${c}</button>`).join('');
+    }
+
+    function filterClientCat(cat, btn) {
+      document.querySelectorAll('.client-cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderClientProducts(cat);
+    }
+
+    function renderClientProducts(cat) {
+      let products = dbGet('products').filter(p => p.stock > 0);
+      if (cat) products = products.filter(p => p.category === cat);
+
+      const grid = document.getElementById('clientProductsGrid');
+      grid.innerHTML = products.map(p => {
+        const item = clientCart.find(c => c.productId === p.id);
+        const qty  = item ? item.qty : 0;
+        return `
+          <div class="client-prod-card">
+            <span class="client-prod-icon">${CATEGORY_EMOJI[p.category]||'🍿'}</span>
+            <div class="client-prod-name">${p.name}</div>
+            <div class="client-prod-price">${p.sellPrice} ج.م</div>
+            <button class="btn btn-secondary btn-xs" style="width:100%;margin-top:6px;" onclick="addClientCart('${p.id}')">
+              ${qty > 0 ? `➕ إضافة (${qty})` : '➕ أضف للطلب'}
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function addClientCart(id) {
+      const p = dbFindById('products', id);
+      if (!p) return;
+      const existing = clientCart.find(c => c.productId === id);
+      if (existing) { existing.qty++; existing.total = existing.qty * existing.price; }
+      else { clientCart.push({ productId: id, name: p.name, price: p.sellPrice, qty: 1, total: p.sellPrice }); }
+      updateClientCartBar();
+      renderClientProducts('');
+    }
+
+    function updateClientCartBar() {
+      const count = clientCart.reduce((sum, c) => sum + c.qty, 0);
+      const total = clientCart.reduce((sum, c) => sum + c.total, 0);
+      document.getElementById('clientCartCount').textContent = count;
+      document.getElementById('clientCartTotal').textContent = `${total.toFixed(2)} ج.م`;
+    }
+
+    function submitClientOrder() {
+      if (!clientCart.length) { alert('السلة فارغة! اختر منتجات أولاً'); return; }
+
+      const dev = dbFindById('devices', deviceId);
+      const activeSession = dbGet('sessions').find(s => s.deviceId === deviceId && s.status === 'active');
+
+      const clientOrders = dbGet('client_orders');
+      clientOrders.push({
+        id: genId(),
+        deviceId,
+        deviceNumber: dev ? dev.number : 'Unknown',
+        sessionId: activeSession ? activeSession.id : null,
+        customerName: activeSession ? activeSession.customerName : 'عميل الجهاز',
+        items: clientCart,
+        total: clientCart.reduce((sum, c) => sum + c.total, 0),
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      });
+      dbSet('client_orders', clientOrders);
+
+      // Add notification for cashier
+      addDbNotification(`🍿 طلب جديد من الجهاز ${dev ? dev.number : ''}`, 'warning');
+
+      alert('✅ تم إرسال طلبك بنجاح للكاشير! سيتم تجهيزه فوراً.');
+      clientCart = [];
+      updateClientCartBar();
+      renderClientProducts('');
+    }
+  </script>
+</body>
+</html>

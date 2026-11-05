@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>10th GAMES — المخزن والمشتريات</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Orbitron:wght@700;900&display=swap">
+  <link rel="stylesheet" href="../../assets/css/global.css">
+  <link rel="stylesheet" href="../../assets/css/layout.css">
+  <link rel="stylesheet" href="../../assets/css/components.css">
+  <link rel="stylesheet" href="../../assets/css/animations.css">
+</head>
+<body>
+  <div id="sidebarContainer"></div>
+  <div class="main-wrapper">
+    <div id="topbarContainer"></div>
+    <main class="page-section page-fade">
+      <div class="page-header">
+        <div class="page-title">
+          <span class="page-title-icon">📦</span>
+          <div>
+            <h1>إدارة المخزن، المنتجات والموردين</h1>
+            <p id="invSummaryText" style="margin:0;font-size:0.82rem;color:var(--text-muted);">جاري التحميل...</p>
+          </div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-ghost btn-sm" onclick="syncOfficialProducts()" title="تحديث وتطبيق قائمة بضاعة 10th GAMES والأسعار الحالية">🔄 تحديث بضاعة 10th GAMES</button>
+          <button class="btn btn-secondary btn-sm" onclick="openAddSupplierModal()">🚚 مورد جديد</button>
+          <button class="btn btn-primary btn-sm" onclick="openAddProductModal()">➕ منتج جديد</button>
+        </div>
+      </div>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchInvTab('products', this)">📦 قائمة المنتجات</button>
+        <button class="tab-btn" onclick="switchInvTab('suppliers', this)">🚚 الموردون والمشتريات</button>
+      </div>
+
+      <!-- Tab 1: Products -->
+      <div id="tabProducts" class="tab-content active">
+        <!-- Filters -->
+        <div class="filters-bar">
+          <div class="search-field">
+            <input type="text" id="invSearchInput" placeholder="🔍 بحث باسم المنتج أو الباركود..." oninput="renderInventory()">
+          </div>
+          <select id="invCatFilter" class="filter-select" onchange="renderInventory()">
+            <option value="">كل الفئات</option>
+          </select>
+          <select id="invStockFilter" class="filter-select" onchange="renderInventory()">
+            <option value="">كل حالات المخزون</option>
+            <option value="low">مخزون منخفض</option>
+            <option value="out">نفد المخزون</option>
+            <option value="good">متوفر</option>
+          </select>
+        </div>
+
+        <!-- Data Table -->
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>الباركود</th>
+                <th>اسم المنتج</th>
+                <th>الفئة</th>
+                <th>شراء</th>
+                <th>بيع</th>
+                <th>الربح</th>
+                <th>المخزون</th>
+                <th>حد التنبيه</th>
+                <th>الحالة</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryTableBody">
+              <!-- Filled by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 2: Suppliers -->
+      <div id="tabSuppliers" class="tab-content">
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>اسم المورد</th>
+                <th>الشركة / المصنع</th>
+                <th>رقم الهاتف</th>
+                <th>ملاحظات</th>
+                <th>تاريخ الإضافة</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="suppliersTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Add/Edit Product Modal -->
+  <div class="modal-overlay hidden" id="productModalOverlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <span class="modal-title" id="productModalTitle">➕ إضافة منتج</span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="prodEditId">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">الباركود <span class="form-required">*</span></label>
+            <div class="input-group">
+              <input type="text" id="prodBarcode" placeholder="الباركود">
+              <button class="btn btn-secondary btn-sm" type="button" onclick="document.getElementById('prodBarcode').value=generateBarcode()">توليد 🎲</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">اسم المنتج <span class="form-required">*</span></label>
+            <input type="text" id="prodName" placeholder="مثال: ريد بول">
+          </div>
+        </div>
+        <div class="form-row-3">
+          <div class="form-group">
+            <label class="form-label">الفئة</label>
+            <input type="text" id="prodCategory" placeholder="مثال: مشروبات" list="prodCatsList">
+            <datalist id="prodCatsList"></datalist>
+          </div>
+          <div class="form-group">
+            <label class="form-label">سعر الشراء (ج.م)</label>
+            <input type="number" id="prodCost" min="0" step="0.5" value="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">سعر البيع (ج.م) <span class="form-required">*</span></label>
+            <input type="number" id="prodPrice" min="0" step="0.5" value="0">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">الكمية الحالية</label>
+            <input type="number" id="prodStock" min="0" value="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">الحد الأدنى للتنبيه</label>
+            <input type="number" id="prodMinStock" min="0" value="5">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="saveProduct()">💾 حفظ</button>
+        <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Supplier Modal -->
+  <div class="modal-overlay hidden" id="supplierModalOverlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="suppModalTitle">🚚 إضافة مورد</span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="suppEditId">
+        <div class="form-group">
+          <label class="form-label">اسم المورد <span class="form-required">*</span></label>
+          <input type="text" id="suppName" placeholder="مثال: شركة الأهرام للمشروبات">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">الشركة / المصنع</label>
+            <input type="text" id="suppCompany" placeholder="اسم الشركة">
+          </div>
+          <div class="form-group">
+            <label class="form-label">رقم الهاتف</label>
+            <input type="tel" id="suppPhone" placeholder="01xxxxxxxxx">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ملاحظات</label>
+          <input type="text" id="suppNotes" placeholder="أي ملاحظات تخص المورد...">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="saveSupplier()">💾 حفظ المورد</button>
+        <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script>window.BASE_PATH='../../';</script>
+  <script>window.PAGE_KEY='inventory';</script>
+  <script>window.PAGE_TITLE='المخزن';</script>
+  <script>window.PAGE_ICON='📦';</script>
+  <script src="../../assets/js/utils.js"></script>
+  <script src="../../assets/js/db.js"></script>
+  <script src="../../assets/js/auth.js"></script>
+  <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/app.js"></script>
+  <script src="./inventory.js"></script>
+</body>
+</html>
